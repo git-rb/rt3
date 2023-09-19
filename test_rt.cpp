@@ -4,21 +4,27 @@
 #include <iostream>
 #include <format>
 
-std::string_view& current_test() {
-  static std::string_view test_name;
-  return test_name;
-}
-void test(std::string_view test_name, auto test_func) {
-  current_test() = test_name;
-  test_func();
-}
-void check(bool test, std::source_location loc = std::source_location::current()) {
-  if (!test)
-    std::cout << std::format("{}:{}:{}: Check failed in test \"{}\"\n", loc.file_name(), loc.line(), loc.column(), current_test());
-}
+#include "rt.h"
+#include "simtest.h"
+
+sim_test::sl loc;
 
 int main() {
+	using namespace rt;
+	using namespace sim_test;
 
-   
+	test("A tuple with w=1.0 is a point", [] {
+				auto a = tuple {4.3, -4.2, 3.1, 1.0};
+				check(a.x == 4.3);
+				check(a.y == -4.2);
+				check(a.z == 3.1);
+				check(a.w == 1.0);
+				check(is_point(a));
+			});
+
+	test("a tuple with w=0.0 is a point", [] {
+				auto a = tuple {4.3, -4.2, 3.1, 0.0};
+				check(is_vector(a));
+			});
 
 }
