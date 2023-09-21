@@ -1,8 +1,20 @@
+//simtest.h - testing suite
+//
 
-namespace sim_test {
+#ifndef SIMTEST_H
+#define SIMTEST_H
+
+#include <source_location>
+#include <string_view>
+#include <format>
+#include <iostream>
+
+namespace simtest {
+
 	using sl = std::source_location;
 	std::string_view current_test; //global
-	constexpr auto fail_str = "{}:{}:{}: Check failed in test\"{}\"\n";
+	constexpr auto fail_str = "{}:{}:{}: Check failed in test \"{}\"\n";
+
 	auto fmt_fail(sl l) {
 		return std::format(fail_str, l.file_name(),
 				l.line(), l.column(), current_test);
@@ -12,8 +24,10 @@ namespace sim_test {
 		current_test = desc;
 		f();
 	}
+
 	void check(bool test, sl loc = sl::current()) {
 		if (!test) std::cout << fmt_fail(loc);
 	}
 }
 
+#endif
