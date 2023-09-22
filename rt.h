@@ -2,6 +2,10 @@
 #define RT_H
 
 #include <cmath>
+#include <algorithm>
+#include <vector>
+#include <sstream>
+#include <format>
 
 namespace rt {
 
@@ -12,6 +16,7 @@ namespace rt {
 	struct tuple {
 		double x, y, z, w; 
 	};
+
 	bool operator== (tuple const& a, tuple const& b) {
 		return appx_equal(a.x, b.x) &&
 			appx_equal(a.y, b.y) &&
@@ -87,6 +92,80 @@ namespace rt {
 		return color {a.r * b.r, a.g * b.g, a.b * b.b};
 	}
 
+
+	struct canvas {
+		using size_type = std::vector<color>::size_type;
+
+		canvas(size_type width, size_type height)
+			:w {width}, h {height}, pixels {w * h, color {0,0,0}} {}
+
+		auto width() const { return w; }
+		auto height() const { return h; }
+
+		void write_pixel(size_type x, size_type y, color c) {
+			pixels[y * w + x] = c;
+		}
+		auto pixel_at(size_type x, size_type y) const {
+			return pixels[y * w + x];
+		}
+
+		auto to_ppm() const {
+			std::ostringstream o;
+			o << std::format("P3\n{} {}\n255\n", w, h);
+			for (auto const& p : pixels)
+				o << std::format("{} {} {}\n",
+						std::clamp<int>(p.r * 256, 0, 255),
+						std::clamp<int>(p.g * 256, 0, 255),
+						std::clamp<int>(p.b * 256, 0, 255));
+			return o.str();
+		}
+
+	private:
+		size_type w, h;
+		std::vector<color> pixels;
+	};
+
+
+	template <std::size_t w = 4, std::size_t h = 4>
+	struct matrix {
+		matrix(std::initializer_list<double> l) {
+			auto pl = l.begin();
+			for (auto& v : vals)
+				v = (pl != l.end()) ? *pl++ : 0.0;
+		}
+
+		double operator[] (std::size_t r, std::size_t c) const { return vals[r * w + c]; }
+		double& operator[] (std::size_t r, std::size_t c) { return vals[r * w + c]; }
+
+		bool operator== (matrix const& b) const {
+			for (auto i {0uz}; i < vals.size(); ++i) 
+				if (!appx_equal(vals[i],b.vals[i])) return false;
+			return true;
+		}
+
+		matrix operator* (matrix const& b) const {
+			matrix<w,h> result {};
+			for (auto r {0uz}; r < h; ++r)
+				for (auto c {0uz}; c < w; ++c)
+					for (auto i {0uz}; i < w; ++i)
+						result[r, c] += (*this)[r, i] * b[i, c];
+			return result;
+		}
+
+		tuple operator* (tuple const& t) const {
+			std::array<double, 4> result {};
+			for (auto r {0uz}; r < h; ++r) {
+				result[r] += (*this)[r, 0] * t.x;
+				result[r] += (*this)[r, 1] * t.y;
+				result[r] += (*this)[r, 2] * t.z;
+				result[r] += (*this)[r, 3] * t.w;
+			}
+			return {result[0], result[1], result[2], result[3]};
+		}
+	private:
+		std::array<double, w * h> vals;
+
+	};
 
 
 }

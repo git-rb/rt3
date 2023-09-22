@@ -7,6 +7,9 @@ int main() {
 	using namespace rt;
 	using namespace simtest;
 
+
+	// tuples, vectors and points
+	//
 	test("A tuple with w=1.0 is a point", [] {
 			auto a = tuple {4.3, -4.2, 3.1, 1.0};
 			check(a.x == 4.3);
@@ -30,7 +33,11 @@ int main() {
 			auto v = vector(4, -4, 3);
 			check(v == tuple {4, -4, 3, 0});
 		});
+
+
 	
+	// tuple operations
+	//
 	test("adding tuples", [] {
 			auto t1 = tuple(3, -2, 5, 1);
 			auto t2 = tuple(-2, 3, 1, 0);
@@ -79,6 +86,10 @@ int main() {
 			check(a/2 == tuple {0.5, -1, 1.5, -2});
 		});
 
+
+
+	// vector operations
+	//
 	test("Computing magnitude of vector(1, 0, 0)", [] {
 			auto v = vector(1, 0, 0);
 			check(magnitude(v) == 1.0);
@@ -134,6 +145,10 @@ int main() {
 			check(cross(b, a) == vector(1, -2, 1));
 		});
 
+
+
+	//colors
+	//
 	test("Colors are tuples", [] {
 			auto c = color {-0.5, 0.4, 1.7};
 			check(c.r == -0.5);
@@ -160,6 +175,127 @@ int main() {
 			auto c1 = color {1, 0.2, 0.4};
 			auto c2 = color {0.9, 1, 0.1};
 			check(c1 * c2 == color {0.9, 0.2, 0.04});
+		});
+
+
+
+	//canvas
+	//
+	test("Creating a canvas", [] {
+			auto c = canvas {10, 20};
+			check(c.width() == 10);
+			check(c.height() == 20);
+		});
+	test("Writing pixels to a canvas", [] {
+			auto c = canvas {10, 20};
+			auto red = color {1, 0, 0};
+			c.write_pixel(2, 3, red);
+			check(c.pixel_at(2, 3) == red);
+		});
+	test("save canvas", [] {
+			auto c = canvas {5, 3};
+
+			auto c1 = color {1.5, 0, 0};
+			auto c2 = color {0, 0.5, 0};
+			auto c3 = color {-0.5, 0, 1};
+			c.write_pixel(0, 0, c1);
+			c.write_pixel(2, 1, c2);
+			c.write_pixel(4, 2, c3);
+			auto ppm = c.to_ppm();
+
+			check(ppm == "P3\n5 3\n255\n255 0 0\n0 0 0\n0 0 0\n0 0 0\n0 0 0\n"
+					"0 0 0\n0 0 0\n0 128 0\n0 0 0\n0 0 0\n"
+					"0 0 0\n0 0 0\n0 0 0\n0 0 0\n0 0 255\n");
+		});
+			
+
+
+	//matrix
+	//
+	test("constructing a 4x4 matrix", [] {
+			auto m = matrix<4,4> 
+				{1, 2, 3, 4, 5.5, 6.5, 7.5, 8.5, 9, 10, 11, 12, 13.5, 14.5, 15.5, 16.5};
+			check(m[0,0] == 1);
+			check(m[0,3] == 4);
+			check(m[1,0] == 5.5);
+			check(m[1,2] == 7.5);
+			check(m[2,2] == 11);
+			check(m[3,0] == 13.5);
+			check(m[3,2] == 15.5);
+		});
+
+	test("2x2 matrix ought to be representable", [] {
+			auto m = matrix<2,2>
+				{-3, 5, 1, -2};
+			check(m[0,0] == -3);
+			check(m[0,1] == 5);
+			check(m[1,0] == 1);
+			check(m[1,1] == -2);
+		});
+
+	test("3x3 matrix ought to be representable", [] {
+			auto m = matrix<3,3>
+				{-3, 5, 0, 1, -2, -7, 0, 1, 1};
+			check(m[0,0] == -3);
+			check(m[1,1] == -2);
+			check(m[2,2] == 1);
+		});
+
+	test("Matrix equality with identical matrices", [] {
+			auto a = matrix
+			{	1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 8, 7, 6,
+				5, 4, 3, 2 };
+			auto b = matrix
+			{	1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 8, 7, 6,
+				5, 4, 3, 2 };
+			check(a == b);
+		});
+
+	test("Matrix equality with different matrices", [] {
+			auto a = matrix
+			{	1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 8, 7, 6,
+				5, 4, 3, 2 };
+			auto b = matrix
+			{ 2, 3, 4, 5,
+			  6, 7, 8, 9,
+				8, 7, 6, 5,
+				4, 3, 2, 1 };
+			check(a != b);
+		});
+
+	test("Multiplying two matrices", [] {
+			auto a = matrix
+			{	1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 8, 7, 6,
+				5, 4, 3, 2 };
+			auto b = matrix
+			{	-2, 1, 2, 3,
+				3, 2, 1, -1,
+				4, 3, 6, 5,
+				1, 2, 7, 8 };
+			check(a * b == matrix
+					{	20, 22, 50, 48,
+						44, 54, 114, 108,
+						40, 58, 110, 102,
+						16, 26, 46, 42 });
+		});
+
+	test("Matrix multiplied by a tuple", [] {
+			auto a = matrix
+			{	1, 2, 3, 4,
+				2, 4, 4, 2,
+				8, 6, 4, 1,
+				0, 0, 0, 1 };
+			auto b = tuple {1, 2, 3, 1};
+			auto r = a * b;
+			check(a * b == tuple {18, 24, 33, 1});
 		});
 
 }

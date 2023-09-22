@@ -11,11 +11,11 @@
 
 namespace simtest {
 
-	using sl = std::source_location;
-	std::string_view current_test; //global
+	using loc_t = std::source_location;
+	std::string_view current_test; 
 	constexpr auto fail_str = "{}:{}:{}: Check failed in test \"{}\"\n";
 
-	auto fmt_fail(sl l) {
+	auto fmt_fail(loc_t l) {
 		return std::format(fail_str, l.file_name(),
 				l.line(), l.column(), current_test);
 	}
@@ -25,8 +25,8 @@ namespace simtest {
 		f();
 	}
 
-	void check(bool test, sl loc = sl::current()) {
-		if (!test) std::cout << fmt_fail(loc);
+	void check(bool test, loc_t l = loc_t::current()) {
+		if (!test) std::cout << fmt_fail(l);
 	}
 }
 
