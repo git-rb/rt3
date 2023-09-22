@@ -298,4 +298,26 @@ int main() {
 			check(a * b == tuple {18, 24, 33, 1});
 		});
 
+	test("Multiplying a matrix by the identity matrix", [] {
+			auto a = matrix 
+			{	0, 1, 2, 4,
+				1, 2, 4, 8,
+				2, 4, 8, 16,
+				4, 8, 16, 32 };
+			check(a * identity_matrix == a);
+		});
+
+	test("Transposing a matrix", [] {
+			auto a = matrix
+			{	0, 9, 3, 0,
+				9, 8, 0, 8,
+				1, 8, 5, 3,
+				0, 0, 5, 8 };
+			check(transpose(a) == matrix
+					{	0, 9, 1, 0,
+						9, 8, 8, 0,
+						3, 0, 5, 5,
+						0, 8, 3, 8 });
+		});
+
 }
