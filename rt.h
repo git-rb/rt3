@@ -143,6 +143,7 @@ namespace rt {
 		constexpr double operator[] (std::size_t r, std::size_t c) const { return vals[r * cols + c]; }
 		constexpr double& operator[] (std::size_t r, std::size_t c) { return vals[r * cols + c]; }
 		constexpr double at_idx(std::size_t idx) const { return vals[idx]; }
+		constexpr double& at_idx(std::size_t idx) { return vals[idx]; }
 
 	private:
 		std::array<double, cols * rows> vals {};
@@ -152,7 +153,8 @@ namespace rt {
 	template <std::size_t rows, std::size_t cols>
 	constexpr bool operator== (matrix<rows,cols> const& a, matrix<rows,cols> const& b) {
 		for (auto i {0uz}; i < rows * cols; ++i)
-			if (!appx_equal(a.at_idx(i), b.at_idx(i))) return false;
+			if (!appx_equal(a.at_idx(i), b.at_idx(i))) 
+				return false;
 		return true;
 	}
 
@@ -189,6 +191,26 @@ namespace rt {
 			for (auto c {0uz}; c < cols; ++c)
 				res[c, r] = m[r, c];
 		return res;
+	}
+
+	constexpr auto determinant(matrix<2,2> const& m) {
+		return m[0,0] * m[1,1] - m[0,1] * m[1,0];
+	}
+
+	template <std::size_t rows, std::size_t cols>
+	constexpr auto submatrix(matrix<rows, cols> const& a, 
+			std::size_t skip_row, std::size_t skip_col) {
+		matrix<rows-1, cols-1> b;
+
+		for (auto r_a {0uz}, r_b {0uz}; r_a < rows; ++r_a) {
+			if (r_a == skip_row) continue;
+			++r_b;
+			for (auto c_a {0uz}, c_b {0uz}; c_a < cols; ++c_a) {
+				if (c_a == skip_col) continue;
+				b[r_b, c_b++] = a[r_a, c_b];
+			}
+		}
+		return b;
 	}
 }
 

@@ -320,4 +320,22 @@ int main() {
 						0, 8, 3, 8 });
 		});
 
+	test("Transposing the identify matrix", [] {
+			check(identity_matrix == transpose(identity_matrix));
+		});
+
+	test("Calculating the determinant of a 2x2 matrix", [] {
+			auto a = matrix<2,2> {	1, 5, -3, 2};
+			check(determinant(a) == 17);
+		});
+
+	test("Submatrix of a 3x3 matrix is a 2x2 matrix", [] {
+			auto a = matrix<3,3> 
+			{	1, 5, 0,
+				-3, 2, 7,
+				0, 6, -3 };
+			auto res = submatrix(a, 0, 2);
+			std::cout << res[0,1];
+			check(res == matrix<2,2> {-3, 2, 0, 6});
+		});
 }
