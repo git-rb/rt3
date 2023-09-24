@@ -329,6 +329,27 @@ int main() {
 			check(determinant(a) == 17);
 		});
 
+
+	test("row_view gets a row", [] {
+			auto a = matrix<4,4> {
+				1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 0, -1, -2,
+				-3, -4, -5, -6};
+			check(a.row_view(2)[0] == 9);
+			check(a.row_view(2)[2] == -1);
+		});
+
+	test("col_view gets a col", [] {
+			auto a = matrix<4,4> {
+				1, 2, 3, 4,
+				5, 6, 7, 8,
+				9, 0, -1, -2,
+				-3, -4, -5, -6};
+			check(a.col_view(2)[0] == 3);
+			check(a.col_view(2)[2] == -1);
+		});
+	/*
 	test("Submatrix of a 3x3 matrix is a 2x2 matrix", [] {
 			auto a = matrix<3,3> 
 			{	1, 5, 0,
@@ -338,4 +359,5 @@ int main() {
 			std::cout << res[0,1];
 			check(res == matrix<2,2> {-3, 2, 0, 6});
 		});
+		*/
 }

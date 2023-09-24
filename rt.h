@@ -6,6 +6,7 @@
 #include <vector>
 #include <sstream>
 #include <format>
+#include <ranges>
 
 namespace rt {
 
@@ -142,21 +143,32 @@ namespace rt {
 
 		constexpr double operator[] (std::size_t r, std::size_t c) const { return vals[r * cols + c]; }
 		constexpr double& operator[] (std::size_t r, std::size_t c) { return vals[r * cols + c]; }
-		constexpr double at_idx(std::size_t idx) const { return vals[idx]; }
-		constexpr double& at_idx(std::size_t idx) { return vals[idx]; }
+
+		constexpr bool operator== (matrix const& m) const {
+			for (auto const& [a,b] : std::views::zip(vals, m.vals))
+				if (!appx_equal(a,b)) return false;
+			return true;
+		}
+
+		constexpr auto row_view(std::size_t r) const {
+			return std::views::chunk(vals, cols)[r];
+		}
+		constexpr auto col_view(std::size_t c) const {
+			return std::views::stride(vals, cols)[c];
+		}
+/*
+		constexpr matrix operator* (matrix const& m) const {
+			matrix<rows,cols> res {};
+			for (auto& c : std::views::zip(vals, m, r) | std::views::chunk(w))
+				for (auto& [a,b,r] : c)
+					r += a * b;
+		}
+		*/
 
 	private:
 		std::array<double, cols * rows> vals {};
 
 	};
-
-	template <std::size_t rows, std::size_t cols>
-	constexpr bool operator== (matrix<rows,cols> const& a, matrix<rows,cols> const& b) {
-		for (auto i {0uz}; i < rows * cols; ++i)
-			if (!appx_equal(a.at_idx(i), b.at_idx(i))) 
-				return false;
-		return true;
-	}
 
 	template <std::size_t rows, std::size_t cols>
 	constexpr tuple operator* (matrix<rows, cols> const& a, tuple const& t) {
