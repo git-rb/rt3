@@ -14,6 +14,8 @@ namespace rt {
 		return std::abs(a-b) < 0.00001;
 	}
 
+
+
 	struct tuple {
 		double x, y, z, w; 
 	};
@@ -54,10 +56,10 @@ namespace rt {
 	constexpr bool is_vector(tuple const& t) {
 		return t.w == 0.0;
 	}
-	constexpr auto point(double x, double y, double z) {
+	constexpr auto mk_point(double x, double y, double z) {
 		return tuple {x,y,z,1.0};
 	}
-	constexpr auto vector(double x, double y, double z) {
+	constexpr auto mk_vector(double x, double y, double z) {
 		return tuple {x,y,z,0.0};
 	}
 
@@ -75,6 +77,7 @@ namespace rt {
 				a.z * b.x - a.x * b.z,
 				a.x * b.y - a.y * b.x);
 	}
+
 
 
 
@@ -102,18 +105,18 @@ namespace rt {
 
 
 	struct canvas {
-		using size_type = std::vector<color>::size_type;
+		using size_t = std::vector<color>::size_type;
 
-		constexpr canvas(size_type width, size_type height)
+		constexpr canvas(size_t width, size_t height)
 			:w {width}, h {height}, pixels {w * h, color {0,0,0}} {}
 
 		constexpr auto width() const { return w; }
 		constexpr auto height() const { return h; }
 
-		constexpr void write_pixel(size_type x, size_type y, color c) {
+		constexpr void write_pixel(size_t x, size_t y, color c) {
 			pixels[y * w + x] = c;
 		}
-		constexpr auto pixel_at(size_type x, size_type y) const {
+		constexpr auto pixel_at(size_t x, size_t y) const {
 			return pixels[y * w + x];
 		}
 
@@ -129,44 +132,31 @@ namespace rt {
 		}
 
 	private:
-		size_type w, h;
+		size_t w, h;
 		std::vector<color> pixels;
 	};
 
 
-	template <std::size_t rows = 4, std::size_t cols = 4>
+	template <std::size_t size> //rows = 4, std::size_t cols = 4>
 	struct matrix {
+		using size_t = std::vector<double, size*size>::size_type;
+
 		constexpr matrix(std::initializer_list<double> l) {
 			std::copy_n(l.begin(), std::max(l.size(), vals.size()), vals.begin());
 		}
 		constexpr matrix() {}
 
-		constexpr double operator[] (std::size_t r, std::size_t c) const { return vals[r * cols + c]; }
-		constexpr double& operator[] (std::size_t r, std::size_t c) { return vals[r * cols + c]; }
+		constexpr double operator[] (size_t r, size_t c) const { return vals[r * cols + c]; }
+		constexpr double& operator[] (size_t r, size_t c) { return vals[r * cols + c]; }
 
 		constexpr bool operator== (matrix const& m) const {
-			for (auto const& [a,b] : std::views::zip(vals, m.vals))
-				if (!appx_equal(a,b)) return false;
+			for (size_t i {}; i < size*size; ++i)
+				if (!appx_equal(vals[i], m.vals[i])) return false;
 			return true;
 		}
 
-		constexpr auto row_view(std::size_t r) const {
-			return std::views::chunk(vals, cols)[r];
-		}
-		constexpr auto col_view(std::size_t c) const {
-			return std::views::stride(vals, cols)[c];
-		}
-/*
-		constexpr matrix operator* (matrix const& m) const {
-			matrix<rows,cols> res {};
-			for (auto& c : std::views::zip(vals, m, r) | std::views::chunk(w))
-				for (auto& [a,b,r] : c)
-					r += a * b;
-		}
-		*/
-
 	private:
-		std::array<double, cols * rows> vals {};
+		std::array<double, size * size> vals {};
 
 	};
 
